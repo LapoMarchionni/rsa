@@ -114,63 +114,43 @@ class RSA:
         self.__pub_key = (e, n)
         self.__priv_key = (d, n)
 
-    def encrypt(self, plaintext, key='pub'):
-        """Encrypt a text by calculating the value of m^k mod n 
+    def encrypt(self, plaintext):
+        """Encrypt a text by calculating the value of m^k mod n
         for every letter m in the plaintext.
-        k is equal to e if the public key is being used, else to d.
 
         Args:
             plaintext: the text to be encrypted.
-            key: 'pub' for public key or 'priv' for private key.
-                [default: 'pub']
         Return:
             A list of every letter encrypted.
         """
-        if key == 'pub':
-            k, n = self.__pub_key
-        else:
-            k, n = self.__priv_key
+        k, n = self.__pub_key
         ct = [pow(ord(m), k, n) for m in plaintext]
         return ct
 
-    def decrypt(self, ciphertext, key='priv'):
+    def decrypt(self, ciphertext):
         """Decript a list of encrypted letters using c^k mod n
         for every number c in the list.
-        k is equal to e if the public key is being used, else to d.
 
         Args:
             ciphertext: the list of numbers to be decrypted.
-            key: 'pub' for public key or 'priv' for private key.
-                [default: 'priv']
         Return:
             A decrypted plaintext.
         """
-        if key == 'priv':
-            k, n = self.__priv_key
-        else:
-            k, n = self.__pub_key
+        k, n = self.__priv_key
         pt = [chr(pow(c, k, n)) for c in ciphertext]
         return RSA.print_text(pt)
 
-    def crt_decrypt(self, ciphertext, key='priv'):
+    def crt_decrypt(self, ciphertext):
         """ RSA decryption using the Chinese Remainder Theorem. """
-        if key == 'priv':
-            k, n = self.__priv_key
-        else:
-            k, n = self.__pub_key
-        dP = RSA._modinv(k, self.__p - 1)
-        dQ = RSA._modinv(k, self.__q - 1)
-        coeff = RSA._modinv(self.__q, self.__p)
-        print(self.__p)
-        print(self.__q)
-        print(dP)
-        print(dQ)
-        print(coeff)
+        k, n = self.__pub_key
+        dp = RSA._modinv(k, self.__p - 1)
+        dq = RSA._modinv(k, self.__q - 1)
+        qinv = RSA._modinv(self.__q, self.__p)
         pt = []
         for c in ciphertext:
-            m1 = pow(c, dP, self.__p)
-            m2 = pow(c, dQ, self.__q)
-            h = coeff * (m1 - m2) % self.__p
-            m = m2 + h*self.__q
+            m1 = pow(c, dp, self.__p)
+            m2 = pow(c, dq, self.__q)
+            h = (qinv * (m1 - m2)) % self.__p
+            m = m2 + h * self.__q
             pt.append(chr(m))
         return RSA.print_text(pt)
